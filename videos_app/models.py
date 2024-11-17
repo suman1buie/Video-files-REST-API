@@ -3,9 +3,9 @@ from django.db import models
 
 class Video(models.Model):
     video_title = models.CharField(max_length=255)
-    file = models.FileField(upload_to='videos/')
+    file_url = models.CharField(max_length=250)
     video_size = models.PositiveIntegerField()
-    video_duration = models.PositiveIntegerField()
+    video_duration = models.FloatField()
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
