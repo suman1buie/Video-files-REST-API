@@ -1,5 +1,6 @@
 import os
 import boto3
+import tempfile
 import hashlib
 from django.core.files.base import ContentFile
 from moviepy.editor import concatenate_videoclips
@@ -47,16 +48,22 @@ def trim_video(video, start_time, end_time):
     """
     video_file_path = video.file_url
     video_file_name = video_file_path.split('/')[-1]
-    clip = VideoFileClip(video_file_path).subclip(start_time, end_time)
-    trimmed_path = f"{settings.MEDIA_ROOT}/trimmed_{video_file_name}"
-    clip.write_videofile(trimmed_path, codec="libx264")
-    
-    os.remove(video.file_url)
-    video.file_url = trimmed_path
-    video.save()
-    
-    return trimmed_path
+    image_url = generate_presigned_url(os.getenv('S3_BUCKET'), video_file_name)
+    if image_url:
+        trimmed_clip = VideoFileClip(image_url).subclip(start_time, end_time)
+        
+        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp_file:
+            trimmed_clip.write_videofile(tmp_file.name, codec="libx264")
+            tmp_file.seek(0)
+            trimmed_data = tmp_file.read()
+        
+            trimmed_path = f"trimmed_{video_file_name}"
+            res, file_url = upload_video_to_s3(ContentFile(trimmed_data), trimmed_path)
 
+            video.file_url = trimmed_path
+            video.save()
+        
+            return trimmed_path    
 
 def merge_multiple_videos(videos, merged_video_title):
     """
@@ -116,8 +123,17 @@ def upload_video_to_s3(file, file_path):
 
 
 def generate_presigned_url(bucket_name, key, expiration=3600):
-    return s3.generate_presigned_url(
-        'get_object',
-        Params={'Bucket': bucket_name, 'Key': key},
-        ExpiresIn=expiration
-    )
+    try:
+        s3 = boto3.client(
+            's3',
+            region_name=os.getenv('S3_REGION'),
+            aws_access_key_id=os.getenv('AWS_ACCESS_KEY'),
+            aws_secret_access_key=os.getenv('AWS_SECRET_KEY')
+        )
+        return s3.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': key},
+            ExpiresIn=expiration
+        )
+    except Exception as e:
+        return None
