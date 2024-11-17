@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from .serializers import VideoSerializer
 from .models import Video, SharedLink
-from .utils import uplod_video, trim_video, generate_token
+from .utils import uplod_video, trim_video, merge_multiple_videos, generate_token
 from .const import MAX_SIZE_MB, MIN_SIZE_MB, MIN_VIDEO_DURATION_MINUTE, MAX_VIDEO_DURATION_MINUTE
 from video_api.urls import v1
 
@@ -104,3 +104,31 @@ class AccessSharedLinkView(APIView):
 
         except SharedLink.DoesNotExist:
             return JsonResponse({"error": "Link not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VideoMergeView(APIView):
+    def post(self, request):
+        try:
+            video_ids = request.data.get('video_ids', [])
+            merged_video_title = request.data.get('video_title', "merged_video_title")
+            
+            if len(video_ids) < 2:
+                return Response({"error": "At least two videos are required to merge."}, status=status.HTTP_400_BAD_REQUEST)
+
+            videos = Video.objects.filter(id__in=video_ids)
+            
+            if len(videos) != len(video_ids):
+                return Response({"error": "Some videos do not exist."}, status=status.HTTP_404_NOT_FOUND)
+
+            merged_video = merge_multiple_videos(videos, merged_video_title)
+            if merged_video:
+                serializer = VideoSerializer(merged_video)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"error": "Failed to merge the videos."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

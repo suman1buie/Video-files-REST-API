@@ -1,9 +1,12 @@
 import os
 import hashlib
+from django.core.files.base import ContentFile
+from moviepy.editor import concatenate_videoclips
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from django.utils.crypto import get_random_string
 from django.conf import settings
 from datetime import timedelta, datetime
+from .models import Video
 
 
 def generate_token(video_id):
@@ -46,3 +49,38 @@ def trim_video(video, start_time, end_time):
     video.save()
     
     return trimmed_path
+
+
+def merge_multiple_videos(videos, merged_video_title):
+    """
+    Merges multiple video files into a single video file.
+
+    """
+    try:
+        clips = []
+
+        for video in videos:
+            clip = VideoFileClip(video.file_url)
+            clips.append(clip)
+
+        merged_clip = concatenate_videoclips(clips, method="compose")
+
+        merged_path = f"{settings.MEDIA_ROOT}/merge_video_{get_random_string(length=10)}.mp4"
+        merged_clip.write_videofile(merged_path, codec="libx264")
+        breakpoint()
+        merged_video = Video.objects.create(
+            video_title=merged_video_title,
+            file_url=merged_path,
+            video_size=os.path.getsize(merged_path),
+            video_duration=merged_clip.duration,
+        )
+        
+        for video in videos:
+            os.remove(video.file_url)
+            video.delete()
+
+        return merged_video
+        
+    except Exception as e:
+        print(f"Error merging videos: {str(e)}")
+        return None
