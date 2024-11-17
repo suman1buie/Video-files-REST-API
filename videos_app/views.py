@@ -17,7 +17,6 @@ from video_api.urls import v1
 
 
 class VideoUploadView(APIView):
-
     def post(self, request):
         file = request.FILES.get('file')
         if not file:
