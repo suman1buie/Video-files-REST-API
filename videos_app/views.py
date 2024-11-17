@@ -32,7 +32,9 @@ class VideoUploadView(APIView):
                 return Response({'error': f'Video size should be between {MIN_SIZE_MB}MB and {MAX_SIZE_MB}MB'}, status=status.HTTP_400_BAD_REQUEST)
 
             video_file_path, duration = uplod_video(file)
-            
+            if video_file_path == '':
+                return Response({'error': 'Failed to upload video'}, status=status.HTTP_400_BAD_REQUEST)
+                
             if duration < MIN_VIDEO_DURATION_MINUTE * 60 and duration > MAX_VIDEO_DURATION_MINUTE * 60:
                 os.remove(video_file_path)
                 return Response({'error': f'Video duration should be between {MIN_VIDEO_DURATION_MINUTE} minutes and {MAX_VIDEO_DURATION_MINUTE} minutes'}, status=status.HTTP_400_BAD_REQUEST)
