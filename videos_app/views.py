@@ -1,13 +1,19 @@
 import os
+from django.utils.crypto import get_random_string
+from datetime import timedelta, datetime
+from django.utils import timezone
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
 
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from .serializers import VideoSerializer
-from .models import Video
-from .utils import uplod_video, trim_video
+from .models import Video, SharedLink
+from .utils import uplod_video, trim_video, generate_token
 from .const import MAX_SIZE_MB, MIN_SIZE_MB, MIN_VIDEO_DURATION_MINUTE, MAX_VIDEO_DURATION_MINUTE
+from video_api.urls import v1
 
 
 class VideoUploadView(APIView):
@@ -56,3 +62,45 @@ class VideoTrimView(APIView):
             return Response({'error': 'Video not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LinkShareView(APIView):
+    def post(self, request, pk):
+        """Generate a shared link for a video"""
+        try:
+            video = Video.objects.get(pk=pk)
+            token = generate_token(video.id)
+            expiry_time = timezone.now() + timedelta(hours=1)
+
+            shared_link = SharedLink.objects.create(
+                video=video,
+                token=token,
+                expiry=expiry_time
+            )
+
+            link = f"{request.build_absolute_uri('/')[:-1]}/api/{v1}/videos/{video.id}/share/{token}/"
+            return Response({
+                "message": "Link generated successfully",
+                "link": link,
+                "expires_at": shared_link.expiry
+            }, status=status.HTTP_201_CREATED)
+
+        except Video.DoesNotExist:
+            return Response({"error": "Video not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+
+class AccessSharedLinkView(APIView):
+    def get(self, request, video_id, token):
+        try:
+            shared_link = get_object_or_404(SharedLink, video_id=video_id, token=token)
+            if shared_link.is_expired():
+                return JsonResponse({"error": "This link has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+            return JsonResponse({
+                "video_title": shared_link.video.video_title,
+                "video_url": shared_link.video.file_url,
+                "expires_at": shared_link.expiry
+            })
+
+        except SharedLink.DoesNotExist:
+            return JsonResponse({"error": "Link not found"}, status=status.HTTP_404_NOT_FOUND)

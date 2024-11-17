@@ -1,7 +1,15 @@
 import os
+import hashlib
 from moviepy.video.io.VideoFileClip import VideoFileClip
 from django.utils.crypto import get_random_string
 from django.conf import settings
+from datetime import timedelta, datetime
+
+
+def generate_token(video_id):
+    random_string = get_random_string(length=32)
+    token = hashlib.sha256(f"{video_id}{random_string}".encode('utf-8')).hexdigest()
+    return token
 
 
 def uplod_video(file):

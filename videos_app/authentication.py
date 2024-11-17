@@ -8,7 +8,7 @@ class TokenAuthentication(BaseAuthentication):
         auth_header = request.headers.get('Authorization')
         
         if not auth_header:
-            return None
+            raise AuthenticationFailed('No API token found in the request')
         
         token = auth_header.split(' ')[1] if ' ' in auth_header else None
 

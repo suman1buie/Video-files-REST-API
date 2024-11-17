@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 
 
 class Video(models.Model):
@@ -18,7 +19,10 @@ class SharedLink(models.Model):
     expiry = models.DateTimeField()
     
     def __str__(self):
-        return f"Link for {self.video.title} (expires at {self.expiry})"
+        return f"Link for {self.video.video_title} (expires at {self.expiry})"
+    
+    def is_expired(self):
+        return timezone.now() > self.expiry
 
 
 class VideoProcessingJob(models.Model):
