@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from .serializers import VideoSerializer
 from .models import Video, SharedLink
-from .utils import uplod_video, trim_video, merge_multiple_videos, generate_token
+from .utils import uplod_video, trim_video, merge_multiple_videos, generate_token, generate_presigned_url
 from .const import MAX_SIZE_MB, MIN_SIZE_MB, MIN_VIDEO_DURATION_MINUTE, MAX_VIDEO_DURATION_MINUTE
 from video_api.urls import v1
 
@@ -96,10 +96,12 @@ class AccessSharedLinkView(APIView):
             shared_link = get_object_or_404(SharedLink, video_id=video_id, token=token)
             if shared_link.is_expired():
                 return JsonResponse({"error": "This link has expired."}, status=status.HTTP_400_BAD_REQUEST)
-
+            
+            access_link = generate_presigned_url(os.getenv('S3_BUCKET'), shared_link.video.file_url, expiration=3600)
+            
             return JsonResponse({
                 "video_title": shared_link.video.video_title,
-                "video_url": shared_link.video.file_url,
+                "signed_video_url": access_link,
                 "expires_at": shared_link.expiry
             })
 
