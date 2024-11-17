@@ -11,7 +11,7 @@ load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-r6j^rqhcj2q=g39_@s66p*$dnh_=r1&s5r^=073-0q(*q&7cdl'
-
+MEDIA_ROOT = 'videos'
 API_TOKEN = os.getenv('API_TOKEN')
 
 # SECURITY WARNING: don't run with debug turned on in production!

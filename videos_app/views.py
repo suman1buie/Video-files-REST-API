@@ -3,17 +3,14 @@ import os
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 
 from .serializers import VideoSerializer
-from .authentication import TokenAuthentication
 from .models import Video
-from .utils import uplod_video
+from .utils import uplod_video, trim_video
 from .const import MAX_SIZE_MB, MIN_SIZE_MB, MIN_VIDEO_DURATION_MINUTE, MAX_VIDEO_DURATION_MINUTE
 
 
 class VideoUploadView(APIView):
-    # permission_classes = [IsAuthenticated]
 
     def post(self, request):
         file = request.FILES.get('file')
@@ -44,4 +41,18 @@ class VideoUploadView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
             os.remove(video_file_path)
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+       
+ 
+class VideoTrimView(APIView):
+    def post(self, request, pk):
+        try:
+            video = Video.objects.get(pk=pk)
+            start = float(request.data.get('start', 0))
+            end = float(request.data.get('end', video.video_duration))
+            trimmed_path = trim_video(video, start, end)
+            return Response({'message': 'Video trimmed successfully', 'trimmed_video': trimmed_path})
+        except Video.DoesNotExist:
+            return Response({'error': 'Video not found'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
