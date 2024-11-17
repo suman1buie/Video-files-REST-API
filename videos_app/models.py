@@ -25,6 +25,14 @@ class SharedLink(models.Model):
         return timezone.now() > self.expiry
 
 
+''' 
+    this following model is created for future use case like when we cand use qeue
+    service for learg ammount of trafic then we can process those video processing
+    services in background and then we can check there progress uing this model
+    
+    somthign for now we can ignnore this model
+
+'''
 class VideoProcessingJob(models.Model):
     STATUS_CHOICES = [
         ('PENDING', 'Pending'),
