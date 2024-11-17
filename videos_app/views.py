@@ -3,14 +3,18 @@ import os
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 from .serializers import VideoSerializer
+from .authentication import TokenAuthentication
 from .models import Video
 from .utils import uplod_video
 from .const import MAX_SIZE_MB, MIN_SIZE_MB, MIN_VIDEO_DURATION_MINUTE, MAX_VIDEO_DURATION_MINUTE
 
 
 class VideoUploadView(APIView):
+    # permission_classes = [IsAuthenticated]
+
     def post(self, request):
         file = request.FILES.get('file')
         if not file:
