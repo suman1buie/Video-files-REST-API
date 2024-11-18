@@ -34,6 +34,8 @@ cd Video-files-REST-API
 
 ```
 
+### **2. Setup the project**
+
 ```bash
 python -m venv venv
 source venv/bin/activate  # On Windows, use venv\Scripts\activate
@@ -41,19 +43,21 @@ pip install -r requirements.txt
 
 ```
 
+### **3. command to run the API server**
+
 ```bash
 python manage.py runserver 8080
 
 ```
 
-### **1. Run the testcase**
+### **4. Run the testcase**
 
 ```bash
 python manage.py test
 
 ```
 
-### **1. check code covrage**
+### **5. check code covrage**
 
 ```bash
 coverage run manage.py test
