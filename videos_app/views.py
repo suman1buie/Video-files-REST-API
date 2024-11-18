@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from .serializers import VideoSerializer
 from .models import Video, SharedLink
-from .utils import uplod_video, trim_video, merge_multiple_videos, generate_token, generate_presigned_url
+from .utils import uplod_video, trim_video, merge_multiple_videos, generate_token, generate_presigned_url, is_video_file
 from .const import MAX_SIZE_MB, MIN_SIZE_MB, MIN_VIDEO_DURATION_MINUTE, MAX_VIDEO_DURATION_MINUTE
 from video_api.urls import v1
 
@@ -30,6 +30,9 @@ class VideoUploadView(APIView):
             if video_size > max_video_size or video_size < min_video_size:
                 return Response({'error': f'Video size should be between {MIN_SIZE_MB}MB and {MAX_SIZE_MB}MB'}, status=status.HTTP_400_BAD_REQUEST)
 
+            if not is_video_file(file._name):
+                return Response({'error': 'Invalid file format'}, status=status.HTTP_400_BAD_REQUEST)
+            
             video_file_path, duration = uplod_video(file)
             if video_file_path == '':
                 return Response({'error': 'Failed to upload video'}, status=status.HTTP_400_BAD_REQUEST)

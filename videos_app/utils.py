@@ -20,6 +20,16 @@ def generate_token(video_id):
     return token
 
 
+def is_video_file(file_path):
+    video_extensions = {
+        '.mp4', '.avi', '.mov', '.mkv', '.flv',
+        '.wmv', '.webm', '.mpeg', '.mpg', '.m4v',
+        '.3gp', '.ogg'
+    }
+    _, ext = os.path.splitext(file_path)
+    return ext.lower() in video_extensions
+
+
 def uplod_video(file):
     """
     Uploads a video file to the server and returns the video duration.

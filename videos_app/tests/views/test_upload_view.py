@@ -70,3 +70,24 @@ class TestVideoUploadView(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['error'], 'Mocked upload error')
         self.assertEqual(Video.objects.count(), 0)
+
+    @patch('videos_app.views.uplod_video')
+    def test_upload_exception_handling(self, mock_uplod_video):
+        mock_uplod_video.side_effect = Exception("Mocked upload error")
+
+        wrong_format = SimpleUploadedFile(
+            "large_video.mp3",
+            b"a" * (6 * 1024 * 1024),
+            content_type="video/mp4"
+        )
+        
+        response = self.client.post(
+            self.upload_url,
+            {'file': wrong_format, 'title': 'not a video file'},
+            format='multipart',
+            HTTP_AUTHORIZATION=f'Token {settings.API_TOKEN}'
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data['error'], 'Invalid file format')
+        self.assertEqual(Video.objects.count(), 0)
