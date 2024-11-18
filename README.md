@@ -18,7 +18,7 @@ A Django-based RESTful API for managing video files. This application allows use
 
 Ensure the following are installed on your system:
 
-- **Python 3.10+**
+- **Python 3.13+**
 - **SQLite** (comes pre-installed with Python)
 - **Virtual environment tool**: `pipenv` or `virtualenv`
 
@@ -43,5 +43,20 @@ pip install -r requirements.txt
 
 ```bash
 python manage.py runserver 8080
+
+```
+
+### **1. Run the testcase**
+
+```bash
+python manage.py test
+
+```
+
+### **1. check code covrage**
+
+```bash
+coverage run manage.py test
+coverage report -m
 
 ```
