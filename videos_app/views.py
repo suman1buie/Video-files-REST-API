@@ -55,8 +55,11 @@ class VideoTrimView(APIView):
             video = Video.objects.get(pk=pk)
             start = float(request.data.get('start', 0))
             end = float(request.data.get('end', video.video_duration))
-            trimmed_path = trim_video(video, start, end)
-            return Response({'message': 'Video trimmed successfully', 'trimmed_video': trimmed_path})
+            resp, meesage = trim_video(video, start, end)
+            if resp:
+                return Response({'message': 'Video trimmed successfully', 'trimmed_video': meesage})
+            else:
+                return Response({'error': meesage}, status=status.HTTP_400_BAD_REQUEST)
         except Video.DoesNotExist:
             return Response({'error': 'Video not found'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:

@@ -3,6 +3,8 @@ from rest_framework import status
 from django.core.files.uploadedfile import SimpleUploadedFile
 from unittest.mock import patch
 from videos_app.models import Video
+from django.conf import settings
+
 
 class TestVideoUploadView(APITestCase):
     def setUp(self):
@@ -27,7 +29,7 @@ class TestVideoUploadView(APITestCase):
             self.upload_url,
             {'file': self.valid_video, 'title': 'Test Video'},
             format='multipart',
-            HTTP_AUTHORIZATION=f'Token ahsjdhjdhjdsjjsjhw2383beghh'
+            HTTP_AUTHORIZATION=f'Token {settings.API_TOKEN}'
         )
         
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
@@ -36,7 +38,7 @@ class TestVideoUploadView(APITestCase):
 
     @patch('videos_app.views.uplod_video')
     def test_no_file_uploaded(self, mock_uplod_video):
-        response = self.client.post(self.upload_url, {}, format='multipart', HTTP_AUTHORIZATION=f'Token ahsjdhjdhjdsjjsjhw2383beghh')
+        response = self.client.post(self.upload_url, {}, format='multipart', HTTP_AUTHORIZATION=f'Token {settings.API_TOKEN}')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data['error'], 'No file uploaded')
         self.assertEqual(Video.objects.count(), 0)
@@ -48,7 +50,7 @@ class TestVideoUploadView(APITestCase):
             b"a" * (self.max_video_size * 1024 * 1024 + 1),
             content_type="video/mp4"
         )
-        response = self.client.post(self.upload_url, {'file': large_video}, format='multipart', HTTP_AUTHORIZATION=f'Token ahsjdhjdhjdsjjsjhw2383beghh')
+        response = self.client.post(self.upload_url, {'file': large_video}, format='multipart', HTTP_AUTHORIZATION=f'Token {settings.API_TOKEN}')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('Video size should be between', response.data['error'])
         self.assertEqual(Video.objects.count(), 0)
@@ -62,7 +64,7 @@ class TestVideoUploadView(APITestCase):
             self.upload_url,
             {'file': self.valid_video, 'title': 'Test Video'},
             format='multipart',
-            HTTP_AUTHORIZATION=f'Token ahsjdhjdhjdsjjsjhw2383beghh'
+            HTTP_AUTHORIZATION=f'Token {settings.API_TOKEN}'
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

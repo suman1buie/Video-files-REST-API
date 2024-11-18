@@ -48,28 +48,38 @@ def trim_video(video, start_time, end_time):
     Trims a video file from the given start time to the end time and save theb video object with new file path.
 
     """
-    video_file_path = video.file_url
-    video_file_name = video_file_path.split('/')[-1]
-    image_url = generate_presigned_url(os.getenv('S3_BUCKET'), video_file_name)
-    if image_url:
-        trimmed_clip = VideoFileClip(image_url).subclip(start_time, end_time)
-        with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp_file:
-            trimmed_clip.write_videofile(tmp_file.name, codec="libx264")
-            tmp_file.seek(0)
-            trimmed_data = tmp_file.read()
-            size = os.path.getsize(tmp_file.name)
-            duration = trimmed_clip.duration
-            trimmed_path = f"trimmed_{video_file_name}"
-            res, file_url = upload_video_to_s3(ContentFile(trimmed_data), trimmed_path)
-            
-            delete_video_file(os.getenv('S3_BUCKET'), video.file_url)
-            video.file_url = trimmed_path
-            trimmed_clip.close()
-            video.video_size = size
-            video.video_duration = duration
-            video.save()
+    try:
+        video_file_path = video.file_url
+        video_file_name = video_file_path.split('/')[-1]
+        image_url = generate_presigned_url(os.getenv('S3_BUCKET'), video_file_name)
+        if image_url:
+            trimmed_clip = VideoFileClip(image_url)
+            if trimmed_clip.duration < end_time:
+                trimmed_clip.close()
+                return False, "End time is too short"
         
-            return trimmed_path    
+            trimmed_clip = trimmed_clip.subclip(start_time, end_time)
+            with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp_file:
+                trimmed_clip.write_videofile(tmp_file.name, codec="libx264")
+                tmp_file.seek(0)
+                trimmed_data = tmp_file.read()
+                size = os.path.getsize(tmp_file.name)
+                duration = trimmed_clip.duration
+                trimmed_path = f"trimmed_{video_file_name}"
+                res, file_url = upload_video_to_s3(ContentFile(trimmed_data), trimmed_path)
+                
+                delete_video_file(os.getenv('S3_BUCKET'), video.file_url)
+                video.file_url = trimmed_path
+                trimmed_clip.close()
+                video.video_size = size
+                video.video_duration = duration
+                video.save()
+            
+                return True, trimmed_path
+            
+        return False, "Unable to find video"
+    except Exception as e:
+        return False, str(e)
 
 
 def merge_multiple_videos(videos, merged_video_title):
