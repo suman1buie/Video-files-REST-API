@@ -10,7 +10,7 @@ A Django-based RESTful API for managing video files. This application allows use
 - **Video Trimming**: Trim uploaded videos from the start or end.
 - **Video Merging**: Combine multiple video clips into a single file.
 - **Shareable Links**: Generate time-limited, shareable links for uploaded videos.
-- **API Documentation**: Interactive API documentation available via Swagger.
+- **API Documentation**: Interactive API documentation available via [Postman]([https://example.comhttps://github.com/suman1buie/Video-files-REST-API/blob/main/Video%20Management%20API.postman_collection.json]).
 
 ---
 
@@ -42,25 +42,34 @@ source venv/bin/activate  # On Windows, use venv\Scripts\activate
 pip install -r requirements.txt
 
 ```
+### **4. command to run the API server**
+```
+create .env in the main project dir and assign the proper value same as like .env.dev file
+before that, you need to create one s3 bucket and AWS cred to access the same. You need to provide this info as well
+```
 
-### **3. command to run the API server**
+### **5. command to run the API server**
 
 ```bash
 python manage.py runserver 8080
 
 ```
 
-### **4. Run the testcase**
+### **6. Run the testcase**
 
 ```bash
 python manage.py test
 
 ```
 
-### **5. check code covrage**
+### **7. check code covrage**
 
 ```bash
 coverage run manage.py test
 coverage report -m
 
 ```
+For API DOC please import ```Video Management API.postman_collection.json ``` in your postman collection
+
+
+
