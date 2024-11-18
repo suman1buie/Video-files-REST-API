@@ -35,7 +35,6 @@ class VideoUploadView(APIView):
                 return Response({'error': 'Failed to upload video'}, status=status.HTTP_400_BAD_REQUEST)
                 
             if duration < MIN_VIDEO_DURATION_MINUTE * 60 and duration > MAX_VIDEO_DURATION_MINUTE * 60:
-                os.remove(video_file_path)
                 return Response({'error': f'Video duration should be between {MIN_VIDEO_DURATION_MINUTE} minutes and {MAX_VIDEO_DURATION_MINUTE} minutes'}, status=status.HTTP_400_BAD_REQUEST)
             
             video = Video.objects.create(
@@ -47,9 +46,8 @@ class VideoUploadView(APIView):
             serializer = VideoSerializer(video)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception as e:
-            os.remove(video_file_path)
             return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-       
+
  
 class VideoTrimView(APIView):
     def post(self, request, pk):
