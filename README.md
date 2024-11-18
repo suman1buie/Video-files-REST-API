@@ -10,7 +10,7 @@ A Django-based RESTful API for managing video files. This application allows use
 - **Video Trimming**: Trim uploaded videos from the start or end.
 - **Video Merging**: Combine multiple video clips into a single file.
 - **Shareable Links**: Generate time-limited, shareable links for uploaded videos.
-- **API Documentation**: Interactive API documentation available via [Postman]([https://example.com](https://github.com/suman1buie/Video-files-REST-API/blob/main/Video%20Management%20API.postman_collection.json).
+- **API Documentation**: Interactive API documentation available via [Postman]([https://example.comhttps://github.com/suman1buie/Video-files-REST-API/blob/main/Video%20Management%20API.postman_collection.json]).
 
 ---
 
