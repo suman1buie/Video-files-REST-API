@@ -42,22 +42,27 @@ source venv/bin/activate  # On Windows, use venv\Scripts\activate
 pip install -r requirements.txt
 
 ```
+### **4. command to run the API server**
+```
+create .env in main project dir and assign proper value
+before the you need to create one s3 bucket and AWS cred to access the same need to provide these info as well
+```
 
-### **3. command to run the API server**
+### **5. command to run the API server**
 
 ```bash
 python manage.py runserver 8080
 
 ```
 
-### **4. Run the testcase**
+### **6. Run the testcase**
 
 ```bash
 python manage.py test
 
 ```
 
-### **5. check code covrage**
+### **7. check code covrage**
 
 ```bash
 coverage run manage.py test
