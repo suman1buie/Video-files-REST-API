@@ -44,8 +44,8 @@ pip install -r requirements.txt
 ```
 ### **4. command to run the API server**
 ```
-create .env in main project dir and assign proper value
-before the you need to create one s3 bucket and AWS cred to access the same need to provide these info as well
+create .env in the main project dir and assign the proper value same as like .env.dev file
+before that, you need to create one s3 bucket and AWS cred to access the same. You need to provide this info as well
 ```
 
 ### **5. command to run the API server**
@@ -69,3 +69,7 @@ coverage run manage.py test
 coverage report -m
 
 ```
+For API DOC please import ```Video Management API.postman_collection.json ``` in your postman collection
+
+
+
