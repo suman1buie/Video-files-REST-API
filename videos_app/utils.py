@@ -12,7 +12,7 @@ from datetime import timedelta, datetime
 from dotenv import load_dotenv
 
 from .models import Video
-
+from .const import MIN_VIDEO_DURATION_MINUTE, MAX_VIDEO_DURATION_MINUTE
 
 def generate_token(video_id):
     random_string = get_random_string(length=32)
@@ -45,12 +45,18 @@ def uplod_video(file):
         duration = clip.duration
         clip.close()
         
-        if res:
-            return video_file_path, duration
+        if duration < MIN_VIDEO_DURATION_MINUTE * 60 and duration > MAX_VIDEO_DURATION_MINUTE * 60:
+            delete_video_file(os.getenv('S3_BUCKET'), video_file_path)
+            error_message = f'Video duration should be between {MIN_VIDEO_DURATION_MINUTE} minutes and {MAX_VIDEO_DURATION_MINUTE} minutes', 0
+            return {"error": error_message, "duration" : 0, 'file_path' : ""}
         
-        return "", 0
+        
+        if res:
+            return {"error": "", "duration" : duration, 'file_path' : video_file_path}
+        
+        return {"error": "Failed to upload video", "duration" : 0, 'file_path' : ""}
     except Exception as e:
-        return "", 0
+        return {"error": f"Failed to upload video due to {str(e)}", "duration" : 0, 'file_path' : ""}
 
 
 def trim_video(video, start_time, end_time):

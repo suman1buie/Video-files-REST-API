@@ -32,19 +32,17 @@ class VideoUploadView(APIView):
 
             if not is_video_file(file._name):
                 return Response({'error': 'Invalid file format'}, status=status.HTTP_400_BAD_REQUEST)
+
+            result = uplod_video(file)
             
-            video_file_path, duration = uplod_video(file)
-            if video_file_path == '':
-                return Response({'error': 'Failed to upload video'}, status=status.HTTP_400_BAD_REQUEST)
-                
-            if duration < MIN_VIDEO_DURATION_MINUTE * 60 and duration > MAX_VIDEO_DURATION_MINUTE * 60:
-                return Response({'error': f'Video duration should be between {MIN_VIDEO_DURATION_MINUTE} minutes and {MAX_VIDEO_DURATION_MINUTE} minutes'}, status=status.HTTP_400_BAD_REQUEST)
+            if result['file_path'] == "":
+                return Response({'error': result['error']}, status=status.HTTP_400_BAD_REQUEST)
             
             video = Video.objects.create(
                 video_title=request.data.get('title', 'Untitled'),
-                file_url=video_file_path,
+                file_url=result['file_path'],
                 video_size=video_size,
-                video_duration=duration,
+                video_duration=result['duration'],
             )
             serializer = VideoSerializer(video)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -71,7 +69,6 @@ class VideoTrimView(APIView):
 
 class LinkShareView(APIView):
     def post(self, request, pk):
-        """Generate a shared link for a video"""
         try:
             video = Video.objects.get(pk=pk)
             token = generate_token(video.id)
