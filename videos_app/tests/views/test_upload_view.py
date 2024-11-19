@@ -24,14 +24,14 @@ class TestVideoUploadView(APITestCase):
     @patch('videos_app.views.MAX_VIDEO_DURATION_MINUTE', 10)
     @patch('videos_app.views.uplod_video')
     def test_video_upload_success(self, mock_uplod_video):
-        mock_uplod_video.return_value = ("/path/to/video.mp4", 300)
+        mock_uplod_video.return_value = {"error": "", "duration" : 300, 'file_path' : "/path/to/video.mp4"}
         response = self.client.post(
             self.upload_url,
             {'file': self.valid_video, 'title': 'Test Video'},
             format='multipart',
             HTTP_AUTHORIZATION=f'Token {settings.API_TOKEN}'
         )
-        
+           
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn('file_url', response.data)
         self.assertEqual(Video.objects.count(), 1)
